@@ -80,13 +80,9 @@ public abstract class PriceFactory {
 
     private static String commaValidation(HashMap<Character, Integer> occurrences,String validatedCopy, String cents) throws InvalidPriceException {
         if (occurrences.containsKey(',') && validatedCopy.length() > 3) {
-            List<Character> list = new ArrayList<>() ;
-            for (char character : validatedCopy.toCharArray()) {
-                list.add(character);
-            }
-            Collections.reverse(list);
+            StringBuilder reversed = new StringBuilder(validatedCopy).reverse();
             for (int i = 3; i < validatedCopy.length(); i += 4) {
-                if (!list.get(i).equals(',')) {
+                if (reversed.charAt(i) != ',') {
                     throw new InvalidPriceException("Invalid price. comma error: " + cents);
                 }
             }
