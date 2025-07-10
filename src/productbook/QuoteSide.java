@@ -93,7 +93,7 @@ public class QuoteSide implements Tradable {
     }
 
     private void setUser(String usercode) throws ProductException {
-        if (usercode.length() != 3 || usercode.contains(" ") || !usercode.matches("[a-zA-Z]+") {
+        if (usercode.length() != 3 || usercode.contains(" ") || !usercode.matches("[a-zA-Z]+")) {
             throw new ProductException("Invalid user code");
         }
         user = usercode;
@@ -101,7 +101,7 @@ public class QuoteSide implements Tradable {
 
     private void setProduct(String stockSymbol) {
         String stockSymbolCopy = stockSymbol.replaceAll("[a-zA-Z]", "").replaceAll("\\d", "").replace(".","");
-        if (stockSymbol.isEmpty() || stockSymbol.length() > 5 || stockSymbol.contains(" ")) || stockSymbolCopy.length() > 1 ){
+        if (stockSymbol.isEmpty() || stockSymbol.length() > 5 || stockSymbol.contains(" ") || stockSymbolCopy.length() > 1 ){
             throw new ProductException("Invalid stock symbol");
         }
         product = stockSymbolCopy;

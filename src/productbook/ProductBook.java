@@ -11,7 +11,7 @@ public class ProductBook {
     }
 
     public TradableDTO add(Tradable tradable) throws ProductException {
-        System.out.println("**ADD: " + t);
+        System.out.println("**ADD: " + tradable);
         if (tradable == null) {
             throw new ProductException("Tradable is null");
         }

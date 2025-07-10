@@ -12,14 +12,14 @@ public class ProductBookSide {
     ProductBookSide(BookSide orderType) {
         side = orderType;
     }
-    public TradableDTO add(TradableDTO tradable) throws ProductException {
+    public TradableDTO add(Tradable tradable) throws ProductException {
         if(tradable == null) {
             throw new ProductException("Tradable Object is null");
         }
         if(!bookEntries.containsKey(side)) {
-            ArrayList<Tradable> updatedTradables;
-            bookEntries.put(tradable.getPrice(), );
-        }
+            ArrayList<Tradable> tradables = new ArrayList<>();
 
+        }
+        return new TradableDTO(tradable);
     }
 }
