@@ -57,6 +57,7 @@ public class Price implements Comparable<Price>  {
             if (getCents() > price.getCents()) {
                 return true;
             }
+            return false;
         }
         throw new InvalidPriceException("Price is null");
     }

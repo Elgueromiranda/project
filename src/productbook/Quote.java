@@ -22,7 +22,14 @@ public class Quote {
 
     }
     public QuoteSide getQuoteSide(BookSide sideIn) {
-        return buySide;
+        switch (sideIn) {
+            case BUY:
+                return buySide;
+            case SELL:
+                return sellSide;
+            default:
+                throw new ProductException("Invalid side in");
+        }
     }
     public String getUser() {
         return user;

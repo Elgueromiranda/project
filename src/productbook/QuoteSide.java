@@ -23,7 +23,6 @@ public class QuoteSide implements Tradable {
         remainingVolume = originalVolume;
         cancelledVolume = 0;
         filledVolume = 0;
-
     }
 
     @Override
@@ -51,7 +50,7 @@ public class QuoteSide implements Tradable {
 
 
     public TradableDTO makeTradableDTO() {
-
+        return new TradableDTO(this);
     }
 
     @Override
@@ -118,22 +117,24 @@ public class QuoteSide implements Tradable {
         id = id;
     }
 
-    private void setSide(BookSide side) {
-        side = side;
+    private void setSide(BookSide orderType) {
+        if (orderType == null) {
+            throw new ProductException("Quote side is null");
+        }
+        side = orderType;
     }
 
     @Override
-    public void setCancelledVolume(int newVol) {
-
+    public void setCancelledVolume(int volume) {
+        volume -= cancelledVolume;
     }
     @Override
-    public void setFilledVolume(int newVol) {
-
+    public void setFilledVolume(int volume) {
     }
 
     @Override
-    public void setRemainingVolume(int newVol) {
-
+    public void setRemainingVolume(int volume) {
+        remainingVolume = volume;
     }
 
 

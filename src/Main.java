@@ -4,10 +4,10 @@
 */
 
 import price.PriceFactory;
-import productbook.BookSide;
-import productbook.Order;
-import productbook.ProductBook;
-import productbook.TradableDTO;
+import productbook.*;
+
+import static productbook.BookSide.BUY;
+import static productbook.BookSide.SELL;
 
 public class Main {
 

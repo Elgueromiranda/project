@@ -11,15 +11,67 @@ public class Order implements Tradable {
     private int remainingVolume;
     private int canceledVolume;
     private int filledVolume;
+    private String id;
+
+    public Order(String orderUser, String orderProduct, Price orderPrice,int orderOriginalVolume, BookSide orderSide) {
+        setUser(orderUser);
+        setProduct(orderProduct);
+        setPrice(orderPrice);
+        setSide(orderSide);
+        setOriginalVolume(orderOriginalVolume);
+
+        remainingVolume = originalVolume;
+        canceledVolume = 0;
+        filledVolume = 0;
+        id = user + product + price + System.nanoTime();
+
+    }
+
+    private void setUser(String usercode) throws ProductException {
+        if (usercode.length() != 3 || usercode.contains(" ") || !usercode.matches("[a-zA-Z]+")) {
+            throw new ProductException("Invalid user code");
+        }
+        user = usercode;
+    }
+
+    private void setProduct(String stockSymbol) {
+        String stockSymbolCopy = stockSymbol.replaceAll("[a-zA-Z]", "").replaceAll("\\d", "").replace(".","");
+        if (stockSymbol.isEmpty() || stockSymbol.length() > 5 || stockSymbol.contains(" ") || stockSymbolCopy.length() > 1 ){
+            throw new ProductException("Invalid stock symbol");
+        }
+        product = stockSymbolCopy;
+    }
+
+    private void setPrice(Price priceObject) {
+        if (priceObject == null) {
+            throw new ProductException("Quote price is null");
+        }
+        price = priceObject;
+    }
+
+    private void setSide(BookSide orderType) {
+        if (orderType == null) {
+            throw new ProductException("Quote side is null");
+        }
+        side = orderType;
+    }
+
+    private void setOriginalVolume(int volume) throws ProductException {
+        if (volume < 0 || volume < 10000) {
+            throw new ProductException("Invalid volume");
+        }
+        originalVolume = volume;
+    }
 
     @Override
     public String toString() {
-        return String.format("%s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",getUser(), getSide(), getPrice(), getOriginalVolume(), getRemainingVolume(), getFilledVolume(), getCancelledVolume(), getId()
+        return String.format("%s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
+                            user , side, price, originalVolume, remainingVolume, filledVolume, canceledVolume, id
         );
     }
     @Override
     public String getId() {
-        return "";
+        return id;
     }
 
     @Override
@@ -29,22 +81,22 @@ public class Order implements Tradable {
 
     @Override
     public void setCancelledVolume(int newVol) {
-
+            canceledVolume += newVol;
     }
 
     @Override
     public int getCancelledVolume() {
-        return 0;
+        return canceledVolume;
     }
 
     @Override
-    public void setRemainingVolume(int newVol) {
-
+    public void setRemainingVolume(int volume) {
+        remainingVolume =- volume;
     }
 
     @Override
     public TradableDTO makeTradableDTO() {
-        return null;
+        return new TradableDTO(this);
     }
 
     @Override
@@ -59,7 +111,7 @@ public class Order implements Tradable {
 
     @Override
     public int getFilledVolume() {
-        return 0;
+        return filledVolume;
     }
 
     @Override
@@ -69,16 +121,24 @@ public class Order implements Tradable {
 
     @Override
     public String getUser() {
-        return "";
+        return user;
     }
 
     @Override
     public String getProduct() {
-        return "";
+        return product;
     }
 
     @Override
     public int getOriginalVolume() {
-        return 0;
+        return originalVolume;
+    }
+
+    public int getCanceledVolume() {
+        return canceledVolume;
+    }
+
+    public void setCanceledVolume(int volume) {
+        canceledVolume = volume;
     }
 }
