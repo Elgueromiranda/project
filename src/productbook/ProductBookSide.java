@@ -4,10 +4,7 @@ import price.InvalidPriceException;
 import price.Price;
 
 import java.awt.print.Book;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static productbook.BookSide.BUY;
@@ -19,25 +16,37 @@ public class ProductBookSide {
 
     public ProductBookSide(BookSide orderType) {
         side = orderType;
-        bookEntries = new TreeMap<>();
+        if (side == BUY) {
+            bookEntries = new TreeMap<>(Collections.reverseOrder());
+        } else  {
+            bookEntries = new TreeMap<>();
+        }
     }
 
     @Override
     public String toString() {
         if (side == BUY) {
             String summary = "Side: " + side.name() + "\n";
-            List<Price> keys = bookEntries.keySet().stream().limit(2).collect(Collectors.toList());
+            if (bookEntries.isEmpty()) {
+                summary = summary + "\t\t<Empty>";
+                return summary;
+            }
+            Set<Price> keys = bookEntries.keySet();
             for (Price price : keys) {
                summary = summary + "\tPrice: " + price.toString() + "\n";
-               summary = summary + "\t\t" +  bookEntries.get(price).get(0).toString();
+               summary = summary + "\t\t" +  bookEntries.get(price).get(0).toString() + "\n";
             }
             return summary;
         } else if (side == SELL) {
             String summary = "Side: " + side.name() + "\n";
-            List<Price> keys = bookEntries.keySet().stream().limit(3).collect(Collectors.toList());
+            if (bookEntries.isEmpty()) {
+                summary = summary + "\t\t<Empty>";
+                return summary;
+            }
+            Set<Price> keys = bookEntries.keySet();
             for (Price price : keys) {
                 summary = summary + "\tPrice: " + price.toString() + "\n";
-                summary = summary + "\t\t" +  bookEntries.get(price).get(0).toString();
+                summary = summary + "\t\t" +  bookEntries.get(price).get(0).toString() + "\n";
             }
             return summary;
         }
@@ -103,15 +112,18 @@ public class ProductBookSide {
         if(tradable == null) {
             throw new ProductException("Tradable Object is null");
         }
-        if(!bookEntries.containsKey(side)) {
-            ArrayList<Tradable> tradables = new ArrayList<>();
-
+        if(bookEntries.containsKey(tradable.getPrice())) {
+            bookEntries.get(tradable.getPrice()).add(tradable);
+        } else {
+            ArrayList<Tradable> value = new ArrayList<>();
+            value.add(tradable);
+            bookEntries.put(tradable.getPrice(), value);
         }
         return new TradableDTO(tradable);
     }
 
     public Price topOfBookPrice() {
-        if (bookEntries == null) {
+        if (bookEntries.isEmpty()) {
             return null;
         }
         return bookEntries.firstKey();

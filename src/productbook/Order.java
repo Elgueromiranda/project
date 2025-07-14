@@ -19,12 +19,10 @@ public class Order implements Tradable {
         setPrice(orderPrice);
         setSide(orderSide);
         setOriginalVolume(orderOriginalVolume);
-
         remainingVolume = originalVolume;
         canceledVolume = 0;
         filledVolume = 0;
         id = user + product + price + System.nanoTime();
-
     }
 
     private void setUser(String usercode) throws ProductException {
@@ -34,12 +32,12 @@ public class Order implements Tradable {
         user = usercode;
     }
 
-    private void setProduct(String stockSymbol) {
-        String stockSymbolCopy = stockSymbol.replaceAll("[a-zA-Z]", "").replaceAll("\\d", "").replace(".","");
-        if (stockSymbol.isEmpty() || stockSymbol.length() > 5 || stockSymbol.contains(" ") || stockSymbolCopy.length() > 1 ){
+    private void setProduct(String symbol) {
+        String symbolCopy = symbol.replaceAll("[a-zA-Z0-9.]", "");
+        if (symbol.isEmpty() || symbol.length() > 5 || symbol.contains(" ") || symbolCopy.length() > 1 ){
             throw new ProductException("Invalid stock symbol");
         }
-        product = stockSymbolCopy;
+        product = symbol;
     }
 
     private void setPrice(Price priceObject) {
@@ -57,7 +55,7 @@ public class Order implements Tradable {
     }
 
     private void setOriginalVolume(int volume) throws ProductException {
-        if (volume < 0 || volume < 10000) {
+        if (volume < 0 || volume > 10000) {
             throw new ProductException("Invalid volume");
         }
         originalVolume = volume;
@@ -66,8 +64,7 @@ public class Order implements Tradable {
     @Override
     public String toString() {
         return String.format("%s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
-                            user , side, price, originalVolume, remainingVolume, filledVolume, canceledVolume, id
-        );
+                            user , side, product, price, originalVolume, remainingVolume, filledVolume, canceledVolume, id);
     }
     @Override
     public String getId() {
@@ -76,7 +73,7 @@ public class Order implements Tradable {
 
     @Override
     public int getRemainingVolume() {
-        return 0;
+        return remainingVolume;
     }
 
     @Override
@@ -101,7 +98,7 @@ public class Order implements Tradable {
 
     @Override
     public Price getPrice() {
-        return null;
+        return price;
     }
 
     @Override
@@ -116,7 +113,7 @@ public class Order implements Tradable {
 
     @Override
     public BookSide getSide() {
-        return null;
+        return side;
     }
 
     @Override

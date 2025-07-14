@@ -9,7 +9,7 @@ public class Quote {
     private QuoteSide sellSide;
 
     public Quote(String symbol, Price buyPrice, int buyVolume, Price sellPrice, int sellVolume, String userName) {
-        String SymbolCopy = symbol.replaceAll("[a-zA-Z]", "").replaceAll("\\d", "").replace(".","");
+        String SymbolCopy = symbol.replaceAll("[a-zA-Z0-9.]", "");
         if (symbol.isEmpty() || symbol.length() > 5 || symbol.contains(" ") || SymbolCopy.length() > 1 ){
             throw new ProductException("Invalid stock symbol");
         }

@@ -27,8 +27,8 @@ public class QuoteSide implements Tradable {
 
     @Override
     public String toString() {
-        return String.format("%s %s side quote for %s: %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s", user,
-                side, product, price, originalVolume,remainingVolume, filledVolume, cancelledVolume, id);
+        return String.format("%s %s side quote for %s: %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
+                user, side, product, price, originalVolume,remainingVolume, filledVolume, cancelledVolume, id);
     }
 
     @Override
@@ -98,12 +98,12 @@ public class QuoteSide implements Tradable {
         user = usercode;
     }
 
-    private void setProduct(String stockSymbol) {
-        String stockSymbolCopy = stockSymbol.replaceAll("[a-zA-Z]", "").replaceAll("\\d", "").replace(".","");
-        if (stockSymbol.isEmpty() || stockSymbol.length() > 5 || stockSymbol.contains(" ") || stockSymbolCopy.length() > 1 ){
+    private void setProduct(String symbol) {
+        String symbolCopy = symbol.replaceAll("[a-zA-Z0-9.]", "");
+        if (symbol.isEmpty() || symbol.length() > 5 || symbol.contains(" ") || symbolCopy.length() > 1 ){
             throw new ProductException("Invalid stock symbol");
         }
-        product = stockSymbolCopy;
+        product = symbol;
     }
 
     private void setPrice(Price priceObject) {
