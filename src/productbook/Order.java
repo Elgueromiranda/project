@@ -102,7 +102,8 @@ public class Order implements Tradable {
     }
 
     @Override
-    public void setFilledVolume(int newVol) {
+    public void setFilledVolume(int volume) {
+        filledVolume = volume;
 
     }
 

@@ -130,23 +130,23 @@ public class ProductBookSide {
     }
 
     public void tradeOut(Price price, int vol) {
-        Price top =  topOfBookPrice();
+        Price top = topOfBookPrice();
         if (top == null) {
             return;
         }
         try {
-            if (top.greaterThan(price)) {
+            if (top.greaterOrEqual(price)) {
                 ArrayList<Tradable> atPrice = bookEntries.get(top);
                 int totalVolAtPrice = 0;
                 for (Tradable tradable : atPrice) {
                     totalVolAtPrice =+ tradable.getRemainingVolume();
                 }
-                if (vol > totalVolAtPrice) {
+                if (vol >= totalVolAtPrice) {
                     for (Tradable t : atPrice) {
                       int rv = t.getRemainingVolume();
                       t.setFilledVolume(t.getOriginalVolume());
                       t.setRemainingVolume(0);
-                        System.out.println(String.format("FULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
+                        System.out.println(String.format("\t\tFULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
                                                 t.getSide(), t.getOriginalVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
                     }
                 } else {
