@@ -18,7 +18,8 @@ public class Quote {
             throw new ProductException("Invalid user code");
         }
         user = userName;
-
+        buySide = new QuoteSide(userName, symbol, buyPrice, buyVolume, BookSide.BUY);
+        sellSide = new QuoteSide(userName, symbol, sellPrice, buyVolume, BookSide.SELL);
 
     }
     public QuoteSide getQuoteSide(BookSide sideIn) {

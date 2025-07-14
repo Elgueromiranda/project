@@ -14,7 +14,7 @@ public class QuoteSide implements Tradable {
     private BookSide side;
 
 
-    public QuoteSide(String userQuote, String productQuote, Price priceQuote, int originalVolumeQuote) {
+    public QuoteSide(String userQuote, String productQuote, Price priceQuote, int originalVolumeQuote, BookSide sideQuote) {
         setPrice(priceQuote);
         setOriginalVolume(originalVolumeQuote);
         setUser(userQuote);
@@ -23,6 +23,7 @@ public class QuoteSide implements Tradable {
         remainingVolume = originalVolume;
         cancelledVolume = 0;
         filledVolume = 0;
+        side = sideQuote;
     }
 
     @Override
@@ -85,7 +86,7 @@ public class QuoteSide implements Tradable {
     }
 
     private void setOriginalVolume(int volume) throws ProductException {
-        if (volume < 0 || volume < 10000) {
+        if (volume < 0 || volume > 10000) {
             throw new ProductException("Invalid volume");
         }
         originalVolume = volume;
@@ -126,7 +127,7 @@ public class QuoteSide implements Tradable {
 
     @Override
     public void setCancelledVolume(int volume) {
-        volume -= cancelledVolume;
+        cancelledVolume += volume;
     }
     @Override
     public void setFilledVolume(int volume) {

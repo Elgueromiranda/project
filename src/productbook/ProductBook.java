@@ -18,7 +18,7 @@ public class ProductBook {
         sellSide = new ProductBookSide(SELL);
     }
 
-    public TradableDTO[] add(Quote qte) {
+    public TradableDTO[] add(Quote qte) throws ProductException {
         if(qte == null) {
             throw new ProductException("Quote passed in is null");
         }
@@ -29,7 +29,10 @@ public class ProductBook {
         return new TradableDTO[]{DTObuy,DTOsell};
     }
 
-    public TradableDTO[] removeQuotesForUser(String username){
+    public TradableDTO[] removeQuotesForUser(String username) throws ProductException {
+        if(username == null) {
+           throw new ProductException("Failed to cancel null quote\n");
+        }
         TradableDTO DTObuy = buySide.removeQuotesForUser(username);
         TradableDTO DTOsell = sellSide.removeQuotesForUser(username);
         return new TradableDTO[]{DTObuy,DTOsell};
@@ -57,13 +60,14 @@ public class ProductBook {
         if (tradable == null) {
             throw new ProductException("Tradable is null");
         }
-        System.out.println("**ADD: " + tradable);
         switch (tradable.getSide()) {
             case BUY:
               TradableDTO buy = buySide.add(tradable);
+              tryTrade();
               return buy;
             case SELL:
              TradableDTO sell = sellSide.add(tradable);
+             tryTrade();
                 return sell;
             default:
                 throw new ProductException("Unknown side: " + tradable.getSide());
@@ -92,13 +96,16 @@ public class ProductBook {
        return "";
     }
 
-    public TradableDTO cancel(BookSide side, String orderId) {
-        if (side == BUY) {
-            buySide.cancel(orderId);
-        } else if (side == SELL) {
-            sellSide.cancel(orderId);
+    public TradableDTO cancel(BookSide side, String orderId) throws ProductException {
+        if (orderId == null) {
+           throw new ProductException(String.format("Failed to cancel %s order\n", side));
         }
-        return  null;
+        if (side == BUY) {
+           return buySide.cancel(orderId);
+        } else if (side == SELL) {
+           return sellSide.cancel(orderId);
+        }
+        return null;
     }
 
     public void tryTrade() {
@@ -125,11 +132,12 @@ public class ProductBook {
                     return;
                 }
             } catch (Exception e) {
-                int toTrade = Math.min(buyVolume, sellVolume);
-                buySide.tradeOut(buy, toTrade);
-                sellSide.tradeOut(buy, toTrade);
-                totalToTrade -= toTrade;
+
             }
+            int toTrade = Math.min(buyVolume, sellVolume);
+            buySide.tradeOut(buy, toTrade);
+            sellSide.tradeOut(sell, toTrade);
+            totalToTrade -= toTrade;
         }
         return;
     }

@@ -59,7 +59,7 @@ public class ProductBookSide {
         for (Price price : prices) {
             ArrayList<Tradable> tradables = bookEntries.get(price);
             for (Tradable t : tradables) {
-                if (t.getId().equals(t.getId())) {
+                if (t.getId().equals(tradableId)) {
                     System.out.println("**CANCEL: " + t);
                     tradables.remove(t);
                     t.setCancelledVolume(t.getRemainingVolume());
@@ -67,12 +67,11 @@ public class ProductBookSide {
                     if (tradables.isEmpty()) {
                         bookEntries.remove(price);
                     }
+                    return new TradableDTO(t);
                 }
-                return new TradableDTO(t);
             }
         }
         return null;
-
     }
 
 
@@ -97,12 +96,12 @@ public class ProductBookSide {
     }
 
     public TradableDTO removeQuotesForUser(String username) {
-        for (ArrayList<Tradable> tradables : bookEntries.values()) {
-            for (Tradable tradable : tradables) {
-                if (tradable.getUser().equals(username)) {
-                   TradableDTO cancelDTO = cancel(tradable.getId());
-
-                    return cancelDTO;
+        for (Price price : bookEntries.keySet()) {
+            ArrayList<Tradable> tradables = bookEntries.get(price);
+            for (Tradable t : tradables) {
+                if (t.toString().contains("quote") && username.equals(t.getUser())) {
+                   TradableDTO dto = cancel(t.getId());
+                   return dto;
                 }
             }
         }
@@ -112,6 +111,7 @@ public class ProductBookSide {
         if(tradable == null) {
             throw new ProductException("Tradable Object is null");
         }
+        System.out.println("**ADD: " + tradable);
         if(bookEntries.containsKey(tradable.getPrice())) {
             bookEntries.get(tradable.getPrice()).add(tradable);
         } else {
@@ -146,7 +146,8 @@ public class ProductBookSide {
                       int rv = t.getRemainingVolume();
                       t.setFilledVolume(t.getOriginalVolume());
                       t.setRemainingVolume(0);
-                        System.out.println("Order Fullfilled");
+                        System.out.println(String.format("FULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
+                                                t.getSide(), t.getOriginalVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
                     }
                 } else {
                     int remainder = vol;
