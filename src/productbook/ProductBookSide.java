@@ -122,6 +122,7 @@ public class ProductBookSide {
         return new TradableDTO(tradable);
     }
 
+
     public Price topOfBookPrice() {
         if (bookEntries.isEmpty()) {
             return null;
@@ -144,10 +145,17 @@ public class ProductBookSide {
                 if (vol >= totalVolAtPrice) {
                     for (Tradable t : atPrice) {
                       int rv = t.getRemainingVolume();
-                      t.setFilledVolume(t.getOriginalVolume());
+                      t.setFilledVolume(rv);
                       t.setRemainingVolume(0);
+                      atPrice.remove(t);
+                      if (atPrice.isEmpty()) {
+                          bookEntries.remove(top);
+                      }
+                      //remove from arr
+
                         System.out.println(String.format("\t\tFULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
                                                 t.getSide(), t.getOriginalVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
+
                     }
                 } else {
                     int remainder = vol;

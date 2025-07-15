@@ -14,10 +14,15 @@ public class QuoteSide implements Tradable {
     private BookSide side;
 
 
-    public QuoteSide(String userQuote, String productQuote, Price priceQuote, int originalVolumeQuote, BookSide sideQuote) {
+    public QuoteSide(String userQuote, String productQuote, Price priceQuote, int originalVolumeQuote, BookSide sideQuote) throws ProductException {
         setPrice(priceQuote);
-        setOriginalVolume(originalVolumeQuote);
-        setUser(userQuote);
+        try {
+            setOriginalVolume(originalVolumeQuote);
+            setUser(userQuote);
+        } catch (Exception e) {
+            System.out.println("invalid volume:"+e);
+        }
+
         setProduct(productQuote);
         id = user + product + price + System.nanoTime();
         remainingVolume = originalVolume;
@@ -99,7 +104,7 @@ public class QuoteSide implements Tradable {
         user = usercode;
     }
 
-    private void setProduct(String symbol) {
+    private void setProduct(String symbol) throws ProductException {
         String symbolCopy = symbol.replaceAll("[a-zA-Z0-9.]", "");
         if (symbol.isEmpty() || symbol.length() > 5 || symbol.contains(" ") || symbolCopy.length() > 1 ){
             throw new ProductException("Invalid stock symbol");
@@ -107,7 +112,7 @@ public class QuoteSide implements Tradable {
         product = symbol;
     }
 
-    private void setPrice(Price priceObject) {
+    private void setPrice(Price priceObject) throws ProductException {
         if (priceObject == null) {
             throw new ProductException("Quote price is null");
         }
@@ -118,7 +123,7 @@ public class QuoteSide implements Tradable {
         id = id;
     }
 
-    private void setSide(BookSide orderType) {
+    private void setSide(BookSide orderType) throws ProductException {
         if (orderType == null) {
             throw new ProductException("Quote side is null");
         }

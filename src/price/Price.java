@@ -53,6 +53,7 @@ public class Price implements Comparable<Price>  {
     }
 
     public boolean greaterThan(Price price) throws InvalidPriceException {
+
         if (price != null) {
             if (getCents() > price.getCents()) {
                 return true;

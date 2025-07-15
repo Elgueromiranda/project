@@ -12,7 +12,7 @@ public class ProductBook {
     private ProductBookSide buySide;
     private ProductBookSide sellSide;
 
-    public ProductBook(String symbol) {
+    public ProductBook(String symbol) throws ProductException {
         setProduct(symbol);
         buySide = new ProductBookSide(BUY);
         sellSide = new ProductBookSide(SELL);
@@ -38,7 +38,7 @@ public class ProductBook {
         return new TradableDTO[]{DTObuy,DTOsell};
     }
 
-    private void setProduct(String symbol) {
+    private void setProduct(String symbol) throws ProductException {
         String symbolCopy = symbol.replaceAll("[a-zA-Z0-9.]", "");
         if (symbol.isEmpty() || symbol.length() > 5 || symbol.contains(" ") || symbolCopy.length() > 1 ){
             throw new ProductException("Invalid stock symbol");

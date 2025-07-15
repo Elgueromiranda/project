@@ -8,7 +8,7 @@ public class Quote {
     private QuoteSide buySide;
     private QuoteSide sellSide;
 
-    public Quote(String symbol, Price buyPrice, int buyVolume, Price sellPrice, int sellVolume, String userName) {
+    public Quote(String symbol, Price buyPrice, int buyVolume, Price sellPrice, int sellVolume, String userName) throws ProductException {
         String SymbolCopy = symbol.replaceAll("[a-zA-Z0-9.]", "");
         if (symbol.isEmpty() || symbol.length() > 5 || symbol.contains(" ") || SymbolCopy.length() > 1 ){
             throw new ProductException("Invalid stock symbol");
@@ -22,7 +22,7 @@ public class Quote {
         sellSide = new QuoteSide(userName, symbol, sellPrice, buyVolume, BookSide.SELL);
 
     }
-    public QuoteSide getQuoteSide(BookSide sideIn) {
+    public QuoteSide getQuoteSide(BookSide sideIn) throws ProductException {
         switch (sideIn) {
             case BUY:
                 return buySide;

@@ -1,6 +1,6 @@
 package productbook;
 
-public class ProductException extends RuntimeException {
+public class ProductException extends Exception {
     public ProductException(String message) {
         super(message);
     }

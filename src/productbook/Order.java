@@ -13,7 +13,7 @@ public class Order implements Tradable {
     private int filledVolume;
     private String id;
 
-    public Order(String orderUser, String orderProduct, Price orderPrice,int orderOriginalVolume, BookSide orderSide) {
+    public Order(String orderUser, String orderProduct, Price orderPrice,int orderOriginalVolume, BookSide orderSide) throws ProductException {
         setUser(orderUser);
         setProduct(orderProduct);
         setPrice(orderPrice);
@@ -32,7 +32,7 @@ public class Order implements Tradable {
         user = usercode;
     }
 
-    private void setProduct(String symbol) {
+    private void setProduct(String symbol) throws ProductException {
         String symbolCopy = symbol.replaceAll("[a-zA-Z0-9.]", "");
         if (symbol.isEmpty() || symbol.length() > 5 || symbol.contains(" ") || symbolCopy.length() > 1 ){
             throw new ProductException("Invalid stock symbol");
@@ -40,14 +40,14 @@ public class Order implements Tradable {
         product = symbol;
     }
 
-    private void setPrice(Price priceObject) {
+    private void setPrice(Price priceObject) throws ProductException {
         if (priceObject == null) {
             throw new ProductException("Quote price is null");
         }
         price = priceObject;
     }
 
-    private void setSide(BookSide orderType) {
+    private void setSide(BookSide orderType) throws ProductException {
         if (orderType == null) {
             throw new ProductException("Quote side is null");
         }
