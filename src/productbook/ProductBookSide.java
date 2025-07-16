@@ -25,7 +25,6 @@ public class ProductBookSide {
 
     @Override
     public String toString() {
-        if (side == BUY) {
             String summary = "Side: " + side.name() + "\n";
             if (bookEntries.isEmpty()) {
                 summary = summary + "\t\t<Empty>";
@@ -33,25 +32,13 @@ public class ProductBookSide {
             }
             Set<Price> keys = bookEntries.keySet();
             for (Price price : keys) {
-               summary = summary + "\tPrice: " + price.toString() + "\n";
-               summary = summary + "\t\t" +  bookEntries.get(price).get(0).toString() + "\n";
-            }
-            return summary;
-        } else if (side == SELL) {
-            String summary = "Side: " + side.name() + "\n";
-            if (bookEntries.isEmpty()) {
-                summary = summary + "\t\t<Empty>";
-                return summary;
-            }
-            Set<Price> keys = bookEntries.keySet();
-            for (Price price : keys) {
-                summary = summary + "\tPrice: " + price.toString() + "\n";
-                summary = summary + "\t\t" +  bookEntries.get(price).get(0).toString() + "\n";
-            }
-            return summary;
-        }
+                summary = summary + "\t\t" + price + ":\n";
+                for (Tradable tradable : bookEntries.get(price)) {
+                    summary = summary + "\t\t\t" + tradable + ":\n";
+                }
 
-        return "";
+            }
+            return summary;
     }
 
     public TradableDTO cancel(String tradableId) {
@@ -133,7 +120,7 @@ public class ProductBookSide {
 
     public void tradeOut(Price price, int vol) {
         Price top = topOfBookPrice();
-        if (top == null) {
+        if (price == null) {
             return;
         }
         try {
@@ -141,19 +128,20 @@ public class ProductBookSide {
                 ArrayList<Tradable> atPrice = bookEntries.get(top);
                 int totalVolAtPrice = 0;
                 for (Tradable tradable : atPrice) {
-                    totalVolAtPrice = totalVolAtPrice + tradable.getRemainingVolume();
+                    totalVolAtPrice += tradable.getRemainingVolume();
                 }
                 if (vol >= totalVolAtPrice) {
                     Iterator<Tradable> iter = atPrice.iterator();
                     while (iter.hasNext()) {
                         Tradable t = iter.next();
                         int rv = t.getRemainingVolume();
+                        t.setFilledVolume(t.getOriginalVolume());
                         t.setRemainingVolume(0);
                         iter.remove();
                         if (atPrice.isEmpty()) {
                             bookEntries.remove(top);
                             System.out.println(String.format("\t\tFULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
-                                    t.getSide(), t.getOriginalVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
+                                    t.getSide(), t.getFilledVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
                             return;
                         }
                         System.out.println(String.format("\t\tFULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
@@ -163,15 +151,14 @@ public class ProductBookSide {
                 } else {
                     int remainder = vol;
                     for (Tradable t : atPrice) {
-                        double ratio = t.getRemainingVolume() / totalVolAtPrice;
-                        int oTrade = (int) Math.ceil(vol * ratio);;
-                        vol = Math.min(vol, remainder);
-                        t.setFilledVolume(t.getFilledVolume() + vol);
-                        t.setRemainingVolume(vol);
+                        double ratio = (double) t.getRemainingVolume() / totalVolAtPrice;
+                        int toTrade = (int) Math.ceil((double) vol * ratio);
+                        toTrade = Math.min(toTrade, remainder);
+                        t.setFilledVolume(t.getFilledVolume() + toTrade);
+                        t.setRemainingVolume(t.getRemainingVolume() - toTrade);
                         System.out.println(String.format("\t\tPARTIAL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
-                                t.getSide(), t.getRemainingVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
-                        remainder -= vol;
-
+                                t.getSide(), t.getFilledVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
+                        remainder -= toTrade;
                     }
 
                 }

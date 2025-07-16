@@ -2,6 +2,7 @@ package productbook;
 
 import price.Price;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static productbook.BookSide.BUY;
@@ -80,7 +81,11 @@ public class ProductBook {
             Optional<Price> o = Optional.ofNullable(buySide.topOfBookPrice());
             if (o.isPresent()) {
                 Price price = o.get();
-                int volume = buySide.bookEntries.get(price).get(0).getRemainingVolume();
+                int volume = 0;
+                ArrayList<Tradable> prices = buySide.bookEntries.get(price);
+                for (Tradable tradable : prices) {
+                    volume += tradable.getRemainingVolume();
+                }
                 return String.format("Top of BUY book: %s x %s", price.toString(), volume);
             }
             return "Top of BUY book: Top of BUY book: $0.00 x 0";
@@ -88,7 +93,11 @@ public class ProductBook {
             Optional<Price> o = Optional.ofNullable(sellSide.topOfBookPrice());
             if (o.isPresent()) {
                 Price price = o.get();
-                int volume = sellSide.bookEntries.get(price).get(0).getRemainingVolume();
+                int volume = 0;
+                ArrayList<Tradable> prices = sellSide.bookEntries.get(price);
+                for (Tradable tradable : prices) {
+                    volume += tradable.getRemainingVolume();
+                }
                 return String.format("Top of SELL book: %s x %s", price.toString(), volume);
             }
             return "Top of SELL book: Top of SELL book: $0.00 x 0";

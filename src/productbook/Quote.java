@@ -19,7 +19,7 @@ public class Quote {
         }
         user = userName;
         buySide = new QuoteSide(userName, symbol, buyPrice, buyVolume, BookSide.BUY);
-        sellSide = new QuoteSide(userName, symbol, sellPrice, buyVolume, BookSide.SELL);
+        sellSide = new QuoteSide(userName, symbol, sellPrice, sellVolume, BookSide.SELL);
 
     }
     public QuoteSide getQuoteSide(BookSide sideIn) throws ProductException {
