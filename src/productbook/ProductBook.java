@@ -116,7 +116,7 @@ public class ProductBook {
             return;
         }
         int buyVolume = buySide.topOfBookVolume();
-        int sellVolume = buySide.topOfBookVolume();
+        int sellVolume = sellSide.topOfBookVolume();
 
         int totalToTrade = Math.max(buyVolume, sellVolume);
 

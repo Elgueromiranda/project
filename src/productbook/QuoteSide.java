@@ -136,6 +136,7 @@ public class QuoteSide implements Tradable {
     }
     @Override
     public void setFilledVolume(int volume) {
+        filledVolume = volume;
     }
 
     @Override

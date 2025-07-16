@@ -81,7 +81,7 @@ public class ProductBookSide {
             ArrayList<Tradable> volume = bookEntries.get(key);
             int total = 0;
             for( Tradable tradable : volume ){
-                total =+ tradable.getRemainingVolume();
+                total += tradable.getRemainingVolume();
             }
             return total;
         } else if (side == BookSide.SELL) {
@@ -89,8 +89,9 @@ public class ProductBookSide {
             ArrayList<Tradable> volume = bookEntries.get(key);
             int total = 0;
             for( Tradable tradable : volume ){
-                total =+ tradable.getRemainingVolume();
+                total = total + tradable.getRemainingVolume();
             }
+            return total;
         }
       return 0;
     }
@@ -140,29 +141,37 @@ public class ProductBookSide {
                 ArrayList<Tradable> atPrice = bookEntries.get(top);
                 int totalVolAtPrice = 0;
                 for (Tradable tradable : atPrice) {
-                    totalVolAtPrice =+ tradable.getRemainingVolume();
+                    totalVolAtPrice = totalVolAtPrice + tradable.getRemainingVolume();
                 }
                 if (vol >= totalVolAtPrice) {
-                    for (Tradable t : atPrice) {
-                      int rv = t.getRemainingVolume();
-                      t.setFilledVolume(rv);
-                      t.setRemainingVolume(0);
-                      atPrice.remove(t);
-                      if (atPrice.isEmpty()) {
-                          bookEntries.remove(top);
-                      }
-                      //remove from arr
-
+                    Iterator<Tradable> iter = atPrice.iterator();
+                    while (iter.hasNext()) {
+                        Tradable t = iter.next();
+                        int rv = t.getRemainingVolume();
+                        t.setRemainingVolume(0);
+                        iter.remove();
+                        if (atPrice.isEmpty()) {
+                            bookEntries.remove(top);
+                            System.out.println(String.format("\t\tFULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
+                                    t.getSide(), t.getOriginalVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
+                            return;
+                        }
                         System.out.println(String.format("\t\tFULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
-                                                t.getSide(), t.getOriginalVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
-
+                                t.getSide(), t.getOriginalVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
                     }
+
                 } else {
                     int remainder = vol;
                     for (Tradable t : atPrice) {
-                        int ratio = t.getRemainingVolume() / totalVolAtPrice;
-                        int oTrade = vol * ratio;
-                        vol = vol - oTrade;
+                        double ratio = t.getRemainingVolume() / totalVolAtPrice;
+                        int oTrade = (int) Math.ceil(vol * ratio);;
+                        vol = Math.min(vol, remainder);
+                        t.setFilledVolume(t.getFilledVolume() + vol);
+                        t.setRemainingVolume(vol);
+                        System.out.println(String.format("\t\tPARTIAL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
+                                t.getSide(), t.getRemainingVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
+                        remainder -= vol;
+
                     }
 
                 }

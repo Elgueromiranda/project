@@ -88,7 +88,7 @@ public class Order implements Tradable {
 
     @Override
     public void setRemainingVolume(int volume) {
-        remainingVolume =- volume;
+        remainingVolume = volume;
     }
 
     @Override
