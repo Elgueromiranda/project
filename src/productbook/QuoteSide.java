@@ -28,7 +28,7 @@ public class QuoteSide implements Tradable {
         remainingVolume = originalVolume;
         cancelledVolume = 0;
         filledVolume = 0;
-        side = sideQuote;
+        setSide(sideQuote);
     }
 
     @Override

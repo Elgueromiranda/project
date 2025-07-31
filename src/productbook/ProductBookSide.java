@@ -2,6 +2,8 @@ package productbook;
 
 import price.InvalidPriceException;
 import price.Price;
+import user.DataValidationException;
+import user.UserManager;
 
 import java.awt.print.Book;
 import java.util.*;
@@ -27,21 +29,21 @@ public class ProductBookSide {
     public String toString() {
             String summary = "Side: " + side.name() + "\n";
             if (bookEntries.isEmpty()) {
-                summary = summary + "\t\t<Empty>";
+                summary += "\t\t<Empty>";
                 return summary;
             }
             Set<Price> keys = bookEntries.keySet();
             for (Price price : keys) {
-                summary = summary + "\t\t" + price + ":\n";
+                summary += "\t\t" + price + ":\n";
                 for (Tradable tradable : bookEntries.get(price)) {
-                    summary = summary + "\t\t\t" + tradable + ":\n";
+                    summary += "\t\t\t" + tradable + ":\n";
                 }
 
             }
             return summary;
     }
 
-    public TradableDTO cancel(String tradableId) {
+    public TradableDTO cancel(String tradableId) throws DataValidationException {
         Set<Price> prices = bookEntries.keySet();
         for (Price price : prices) {
             ArrayList<Tradable> tradables = bookEntries.get(price);
@@ -54,7 +56,9 @@ public class ProductBookSide {
                     if (tradables.isEmpty()) {
                         bookEntries.remove(price);
                     }
-                    return new TradableDTO(t);
+                    TradableDTO cancelled = new TradableDTO(t);
+                    UserManager.getInstance().updateTradable(cancelled.user(), cancelled);
+                    return cancelled;
                 }
             }
         }
@@ -83,19 +87,21 @@ public class ProductBookSide {
       return 0;
     }
 
-    public TradableDTO removeQuotesForUser(String username) {
+    public TradableDTO removeQuotesForUser(String username) throws DataValidationException {
         for (Price price : bookEntries.keySet()) {
             ArrayList<Tradable> tradables = bookEntries.get(price);
             for (Tradable t : tradables) {
                 if (t.toString().contains("quote") && username.equals(t.getUser())) {
-                   TradableDTO dto = cancel(t.getId());
+                    TradableDTO dto = null;
+                        dto = cancel(t.getId());
+                        UserManager.getInstance().updateTradable (dto.user(), dto);
                    return dto;
                 }
             }
         }
         return null;
     }
-    public TradableDTO add(Tradable tradable) throws ProductException {
+    public TradableDTO add(Tradable tradable) throws ProductException, DataValidationException {
         if(tradable == null) {
             throw new ProductException("Tradable Object is null");
         }
@@ -107,7 +113,9 @@ public class ProductBookSide {
             value.add(tradable);
             bookEntries.put(tradable.getPrice(), value);
         }
-        return new TradableDTO(tradable);
+        TradableDTO order = new TradableDTO(tradable);
+        UserManager.getInstance().updateTradable(order.user(), order);
+        return order;
     }
 
 

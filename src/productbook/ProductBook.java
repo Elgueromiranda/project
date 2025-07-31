@@ -1,6 +1,7 @@
 package productbook;
 
 import price.Price;
+import user.DataValidationException;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -19,18 +20,25 @@ public class ProductBook {
         sellSide = new ProductBookSide(SELL);
     }
 
-    public TradableDTO[] add(Quote qte) throws ProductException {
-        if(qte == null) {
+    public TradableDTO[] add(Quote qte) throws ProductException, DataValidationException {
+        if (qte == null) {
             throw new ProductException("Quote passed in is null");
         }
         removeQuotesForUser(qte.getUser());
-        TradableDTO DTObuy = buySide.add(qte.getQuoteSide(BUY));
-        TradableDTO DTOsell = sellSide.add(qte.getQuoteSide(SELL));
+        TradableDTO DTObuy = null;
+        TradableDTO DTOsell = null;
+        try {
+            DTObuy = buySide.add(qte.getQuoteSide(BUY));
+            DTOsell = sellSide.add(qte.getQuoteSide(SELL));
+
+        } catch (DataValidationException e) {
+
+        }
         tryTrade();
-        return new TradableDTO[]{DTObuy,DTOsell};
+        return new TradableDTO[]{DTObuy, DTOsell};
     }
 
-    public TradableDTO[] removeQuotesForUser(String username) throws ProductException {
+    public TradableDTO[] removeQuotesForUser(String username) throws ProductException, DataValidationException {
         if(username == null) {
            throw new ProductException("Failed to cancel null quote\n");
         }
@@ -57,7 +65,7 @@ public class ProductBook {
         return summary;
     }
 
-    public TradableDTO add(Tradable tradable) throws ProductException {
+    public TradableDTO add(Tradable tradable) throws ProductException, DataValidationException {
         if (tradable == null) {
             throw new ProductException("Tradable is null");
         }
@@ -105,7 +113,7 @@ public class ProductBook {
        return "";
     }
 
-    public TradableDTO cancel(BookSide side, String orderId) throws ProductException {
+    public TradableDTO cancel(BookSide side, String orderId) throws ProductException, DataValidationException {
         if (orderId == null) {
            throw new ProductException(String.format("Failed to cancel %s order\n", side));
         }
