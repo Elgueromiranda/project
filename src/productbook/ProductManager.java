@@ -3,6 +3,7 @@ package productbook;
 import user.DataValidationException;
 import user.UserManager;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -12,7 +13,7 @@ import static productbook.BookSide.SELL;
 
 public final class ProductManager {
     private static ProductManager instance = new ProductManager();
-    HashMap<String, ProductBook> productBooks;
+    private HashMap<String, ProductBook> productBooks;
 
     private ProductManager() {
         productBooks = new HashMap<>();
@@ -22,29 +23,40 @@ public final class ProductManager {
         return instance;
     }
 
-    public TradableDTO[] addQuote(Quote q) throws DataValidationException, ProductException {
+    public TradableDTO[] addQuote(Quote q) throws DataValidationException {
         if (q == null) {
             throw new DataValidationException("Quote cannot be null");
         }
         ProductBook book = productBooks.get(q.getSymbol());
-        TradableDTO[] sides = book.removeQuotesForUser(q.getUser());
-        TradableDTO buyside = addTradable(q.getQuoteSide(BUY));
-        TradableDTO sellside = addTradable(q.getQuoteSide(SELL));
-        return new TradableDTO[] {buyside, sellside};
+        TradableDTO buyside = null;
+        TradableDTO sellside = null;
+        try {
+            TradableDTO[] sides = book.removeQuotesForUser(q.getUser());
+            buyside = addTradable(q.getQuoteSide(BUY));
+            sellside = addTradable(q.getQuoteSide(SELL));
+        } catch (ProductException e) {
+            System.out.println("Error adding quote for user " + e.getMessage());
+        }
+        return new TradableDTO[]{buyside, sellside};
     }
 
-    public TradableDTO addTradable(Tradable o) throws DataValidationException, ProductException {
+    public TradableDTO addTradable(Tradable o) throws DataValidationException {
         if (o == null) {
             throw new DataValidationException("Tradable cannot be null. cannot add null.");
         }
         ProductBook book = productBooks.get(o.getProduct());
-        TradableDTO tradable = book.add(o);
+        TradableDTO tradable = null;
+        try {
+            tradable = book.add(o);
+        } catch (ProductException e) {
+            System.out.println("Error adding tradable for user to product manager " + e.getMessage());
+        }
         UserManager manager = UserManager.getInstance();
-        manager.updateTradable(o.getProduct(), new TradableDTO(o));
+        manager.updateTradable(o.getUser(), new TradableDTO(o));
         return tradable;
     }
 
-    public TradableDTO cancel(TradableDTO o) throws ProductException, DataValidationException {
+    public TradableDTO cancel(TradableDTO o) throws ProductException {
         ProductBook book = productBooks.get(o.product());
         TradableDTO canceled = book.cancel(o.side(), o.tradableId());
         if (canceled == null) {
@@ -53,7 +65,7 @@ public final class ProductManager {
         return canceled;
     }
 
-    public TradableDTO[] cancelQuote(String symbol, String user) throws ProductException, DataValidationException {
+    public TradableDTO[] cancelQuote(String symbol, String user) throws ProductException {
         ProductBook book = productBooks.get(symbol);
         TradableDTO[] canceled = book.removeQuotesForUser(user);
         return  canceled;
@@ -68,7 +80,7 @@ public final class ProductManager {
         return books;
     }
 
-    public void addProduct(String symbol) throws DataValidationException, ProductException {
+    public void addProduct(String symbol) throws DataValidationException {
         if (symbol == null) {
             throw new DataValidationException("Invalid product symbol");
         }
@@ -76,7 +88,11 @@ public final class ProductManager {
         if (symbol.isEmpty() || symbol.length() > 5 || symbol.contains(" ") || symbolCopy.length() > 1 ){
             throw new DataValidationException("Invalid product symbol");
         }
-        productBooks.put(symbol, new ProductBook(symbol));
+        try {
+            productBooks.put(symbol, new ProductBook(symbol));
+        } catch (ProductException e) {
+            System.out.println("Error adding product for user " + e.getMessage());
+        }
 
     }
 

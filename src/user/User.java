@@ -1,15 +1,19 @@
 package user;
 
+import currentmarket.CurrentMarketObserver;
+import currentmarket.CurrentMarketSide;
 import productbook.TradableDTO;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class User {
+public class User implements CurrentMarketObserver {
     private String userId;
-    HashMap<String, TradableDTO> tradables;
+    private HashMap<String, TradableDTO> tradables;
+    private HashMap<String, CurrentMarketSide[]> currentMarkets = new HashMap<>();
 
-    public void updateTradable (TradableDTO o) {
+    public void updateTradable(TradableDTO o) {
         if (!Objects.isNull(o)) {
             if (!tradables.containsKey(o.tradableId())) {
                 tradables.put(o.tradableId(), o);
@@ -34,10 +38,29 @@ public class User {
         tradables = new HashMap<>();
     }
 
-    public void setUserId(String id) throws UserException {
+    private void setUserId(String id) throws UserException {
         if(id == null || id.length() != 3 || !id.matches("[a-zA-Z]+")){
             throw new UserException("Invalid user ID");
         }
         userId = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    @Override
+    public void updateCurrentMarket(String symbol, CurrentMarketSide buySide, CurrentMarketSide sellSide) {
+        CurrentMarketSide[] market = {buySide, sellSide};
+        currentMarkets.put(symbol, market);
+    }
+
+    public String getCurrentMarkets() {
+        String market = "";
+
+        for (String key : currentMarkets.keySet()) {
+            market += String.format("%s %s - %s\n", key, currentMarkets.get(key)[0], currentMarkets.get(key)[1]);
+        }
+        return market;
     }
 }

@@ -3,8 +3,15 @@ package price;
 import java.util.*;
 
 public abstract class PriceFactory {
+    private static final Map<Integer, Price> priceCache = new HashMap<>();
     public static Price makePrice(int cents) {
-        return new Price(cents);
+        Price price = priceCache.get(cents);
+        if (price == null) {
+            price = new Price(cents);
+            priceCache.put(cents, price);
+            return price;
+        }
+        return price;
     }
 
     public static Price makePrice(String cents) throws InvalidPriceException {
@@ -32,19 +39,19 @@ public abstract class PriceFactory {
                     throw new InvalidPriceException("Invalid price. Inappropriate format: " + cents);
                 } else if (occurrences.containsKey('$') && occurrences.containsKey('-') && validatedCopy.substring(0,2).equals("$-")) {
                     validatedCopy = validatedCopy.substring(2);
-                    validatedCopy = PriceFactory.commaValidation(occurrences, validatedCopy, cents);
-                    return new Price(Integer.parseInt("-" + validatedCopy + mantissa));
+                    validatedCopy = commaValidation(occurrences, validatedCopy, cents);
+                    return makePrice(Integer.parseInt("-" + validatedCopy + mantissa));
                 } else if (occurrences.containsKey('$') && String.valueOf(validatedCopy.charAt(0)).equals("$")) {
                     validatedCopy = validatedCopy.substring(1);
-                    validatedCopy = PriceFactory.commaValidation(occurrences,validatedCopy,cents);
-                    return new Price(Integer.parseInt(validatedCopy + mantissa));
+                    validatedCopy = commaValidation(occurrences,validatedCopy,cents);
+                    return makePrice(Integer.parseInt(validatedCopy + mantissa));
                 } else if (occurrences.containsKey('-') && String.valueOf(validatedCopy.charAt(0)).equals("-")) {
                     validatedCopy = validatedCopy.substring(1);
-                    validatedCopy = PriceFactory.commaValidation(occurrences,validatedCopy,cents);
-                    return new Price(Integer.parseInt("-" + validatedCopy + mantissa));
+                    validatedCopy = commaValidation(occurrences,validatedCopy,cents);
+                    return makePrice(Integer.parseInt("-" + validatedCopy + mantissa));
                 } else {
-                    validatedCopy = PriceFactory.commaValidation(occurrences,validatedCopy,cents);
-                    return new Price(Integer.parseInt(validatedCopy + mantissa));
+                    validatedCopy = commaValidation(occurrences,validatedCopy,cents);
+                    return makePrice(Integer.parseInt(validatedCopy + mantissa));
                 }
             } else if (dotTarget == length - 1 || dotTarget == length - 3 ) {
                 String validatedCopy = cents.replace(".","");
@@ -57,19 +64,19 @@ public abstract class PriceFactory {
                     throw new InvalidPriceException("Invalid price. Inappropriate format: " + cents);
                 } else if (occurrences.containsKey('$') && occurrences.containsKey('-') && validatedCopy.substring(0,2).equals("$-")) {
                     validatedCopy = validatedCopy.substring(2);
-                    validatedCopy = PriceFactory.commaValidation(occurrences, validatedCopy, cents);
-                    return new Price(Integer.parseInt("-" + validatedCopy + mantissa));
+                    validatedCopy = commaValidation(occurrences, validatedCopy, cents);
+                    return makePrice(Integer.parseInt("-" + validatedCopy + mantissa));
                 } else if (occurrences.containsKey('$') && String.valueOf(validatedCopy.charAt(0)).equals("$")) {
                     validatedCopy = validatedCopy.substring(1);
-                    validatedCopy = PriceFactory.commaValidation(occurrences,validatedCopy,cents);
-                    return new Price(Integer.parseInt(validatedCopy + mantissa));
+                    validatedCopy = commaValidation(occurrences,validatedCopy,cents);
+                    return makePrice(Integer.parseInt(validatedCopy + mantissa));
                 } else if (occurrences.containsKey('-') && String.valueOf(validatedCopy.charAt(0)).equals("-")) {
                     validatedCopy = validatedCopy.substring(1);
-                    validatedCopy = PriceFactory.commaValidation(occurrences,validatedCopy,cents);
-                    return new Price(Integer.parseInt("-" + validatedCopy + mantissa));
+                    validatedCopy = commaValidation(occurrences,validatedCopy,cents);
+                    return makePrice(Integer.parseInt("-" + validatedCopy + mantissa));
                 } else {
-                    validatedCopy = PriceFactory.commaValidation(occurrences,validatedCopy,cents);
-                    return new Price(Integer.parseInt(validatedCopy + mantissa));
+                    validatedCopy = commaValidation(occurrences,validatedCopy,cents);
+                    return makePrice(Integer.parseInt(validatedCopy + mantissa));
                 }
             } else {
                     throw new InvalidPriceException("Invalid price String value: " + cents);

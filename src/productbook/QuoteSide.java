@@ -119,8 +119,8 @@ public class QuoteSide implements Tradable {
         price = priceObject;
     }
 
-    private void setId(String id) {
-        id = id;
+    private void setId(String userId) {
+        id = userId;
     }
 
     private void setSide(BookSide orderType) throws ProductException {

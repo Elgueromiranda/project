@@ -1,8 +1,11 @@
 package productbook;
 
+import currentmarket.CurrentMarketTracker;
 import price.Price;
+import price.PriceFactory;
 import user.DataValidationException;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -20,7 +23,7 @@ public class ProductBook {
         sellSide = new ProductBookSide(SELL);
     }
 
-    public TradableDTO[] add(Quote qte) throws ProductException, DataValidationException {
+    public TradableDTO[] add(Quote qte) throws ProductException {
         if (qte == null) {
             throw new ProductException("Quote passed in is null");
         }
@@ -35,16 +38,28 @@ public class ProductBook {
 
         }
         tryTrade();
+
         return new TradableDTO[]{DTObuy, DTOsell};
     }
 
-    public TradableDTO[] removeQuotesForUser(String username) throws ProductException, DataValidationException {
+    public TradableDTO[] removeQuotesForUser(String username) throws ProductException {
         if(username == null) {
            throw new ProductException("Failed to cancel null quote\n");
         }
-        TradableDTO DTObuy = buySide.removeQuotesForUser(username);
-        TradableDTO DTOsell = sellSide.removeQuotesForUser(username);
-        return new TradableDTO[]{DTObuy,DTOsell};
+
+        TradableDTO DTObuy = null;
+        TradableDTO DTOsell = null;
+
+        try {
+            DTObuy = buySide.removeQuotesForUser(username);
+            System.out.println("------------------------------------------");
+            DTOsell = sellSide.removeQuotesForUser(username);
+        } catch (DataValidationException e) {
+            System.out.println("failed to remove user quotes\n" + e.getMessage());
+        }
+        TradableDTO[] DTO = new TradableDTO[]{DTObuy, DTOsell};
+        updateMarket();
+        return DTO;
     }
 
     private void setProduct(String symbol) throws ProductException {
@@ -65,18 +80,30 @@ public class ProductBook {
         return summary;
     }
 
-    public TradableDTO add(Tradable tradable) throws ProductException, DataValidationException {
+    public TradableDTO add(Tradable tradable) throws ProductException {
         if (tradable == null) {
             throw new ProductException("Tradable is null");
         }
         switch (tradable.getSide()) {
             case BUY:
-              TradableDTO buy = buySide.add(tradable);
-              tryTrade();
-              return buy;
+                TradableDTO buy = null;
+                try {
+                    buy = buySide.add(tradable);
+                } catch (DataValidationException e) {
+                    System.out.println("failed to add tradable to productbook\n" + e.getMessage());
+                }
+                tryTrade();
+                updateMarket();
+                return buy;
             case SELL:
-             TradableDTO sell = sellSide.add(tradable);
-             tryTrade();
+                TradableDTO sell = null;
+                try {
+                    sell = sellSide.add(tradable);
+                } catch (DataValidationException e) {
+                    System.out.println("failed to add tradable to productbook\n" + e.getMessage());
+                }
+                tryTrade();
+                updateMarket();
                 return sell;
             default:
                 throw new ProductException("Unknown side: " + tradable.getSide());
@@ -113,16 +140,39 @@ public class ProductBook {
        return "";
     }
 
-    public TradableDTO cancel(BookSide side, String orderId) throws ProductException, DataValidationException {
+    public TradableDTO cancel(BookSide side, String orderId) throws ProductException {
         if (orderId == null) {
            throw new ProductException(String.format("Failed to cancel %s order\n", side));
         }
         if (side == BUY) {
-           return buySide.cancel(orderId);
+            TradableDTO buy = null;
+            try {
+                buy = buySide.cancel(orderId);
+                updateMarket();
+                return buy;
+            } catch (DataValidationException e) {
+                System.out.println("failed to cancel order BUYSIDE" + orderId + "\n" + e.getMessage());
+            }
         } else if (side == SELL) {
-           return sellSide.cancel(orderId);
+            TradableDTO sell = null;
+            try {
+                sell = sellSide.cancel(orderId);
+                updateMarket();
+                return sell;
+            } catch (DataValidationException e) {
+                System.out.println("failed to cancel order SELLSIDE" + orderId + "\n" + e.getMessage());
+            }
         }
         return null;
+    }
+
+    private void updateMarket() {
+        Price buy = buySide.topOfBookPrice();
+        int buyVolume = buySide.topOfBookVolume();
+        Price sell = sellSide.topOfBookPrice();
+        int sellVolume = sellSide.topOfBookVolume();
+
+        CurrentMarketTracker.getInstance().updateMarket(product, buy, buyVolume, sell, sellVolume);
     }
 
     public void tryTrade() {
@@ -140,7 +190,8 @@ public class ProductBook {
         while (totalToTrade > 0) {
             Price buyTop = buySide.topOfBookPrice();
             Price sellTop = sellSide.topOfBookPrice();
-
+            buyVolume = buySide.topOfBookVolume();
+            sellVolume = sellSide.topOfBookVolume();
             if (buyTop == null || sellTop == null) {
                 return;
             }
@@ -149,9 +200,10 @@ public class ProductBook {
                     return;
                 }
             } catch (Exception e) {
-
+                System.out.println("Price mismatch cant trade" + e.getMessage());
             }
             int toTrade = Math.min(buyVolume, sellVolume);
+            buy = buySide.topOfBookPrice();
             buySide.tradeOut(buy, toTrade);
             sellSide.tradeOut(sell, toTrade);
             totalToTrade -= toTrade;

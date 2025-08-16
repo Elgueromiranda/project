@@ -10,9 +10,4 @@ public enum BookSide {
 //            throw new ProductException("Order type is null");
 //        };
 //        orderType = type;
-//    }
-
-
-
-
 }

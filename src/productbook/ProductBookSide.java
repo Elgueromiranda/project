@@ -67,20 +67,30 @@ public class ProductBookSide {
 
 
     public int topOfBookVolume(){
+        int total = 0;
+
         if (side == BookSide.BUY) {
-            Price key = bookEntries.lastKey();
-            ArrayList<Tradable> volume = bookEntries.get(key);
-            int total = 0;
-            for( Tradable tradable : volume ){
-                total += tradable.getRemainingVolume();
+            try {
+                Price key = bookEntries.firstKey();
+                ArrayList<Tradable> volume = bookEntries.get(key);
+
+                for( Tradable tradable : volume ){
+                    total += tradable.getRemainingVolume();
+                }
+            } catch (Exception e) {
+                return total;
             }
             return total;
         } else if (side == BookSide.SELL) {
-            Price key = bookEntries.firstKey();
-            ArrayList<Tradable> volume = bookEntries.get(key);
-            int total = 0;
-            for( Tradable tradable : volume ){
-                total = total + tradable.getRemainingVolume();
+            try {
+                Price key = bookEntries.firstKey();
+                ArrayList<Tradable> volume = bookEntries.get(key);
+
+                for( Tradable tradable : volume ){
+                    total = total + tradable.getRemainingVolume();
+                }
+            } catch (Exception e) {
+                return total;
             }
             return total;
         }
@@ -94,7 +104,7 @@ public class ProductBookSide {
                 if (t.toString().contains("quote") && username.equals(t.getUser())) {
                     TradableDTO dto = null;
                         dto = cancel(t.getId());
-                        UserManager.getInstance().updateTradable (dto.user(), dto);
+                        UserManager.getInstance().updateTradable(dto.user(), dto);
                    return dto;
                 }
             }
@@ -142,10 +152,12 @@ public class ProductBookSide {
                     Iterator<Tradable> iter = atPrice.iterator();
                     while (iter.hasNext()) {
                         Tradable t = iter.next();
-                        int rv = t.getRemainingVolume();
-                        t.setFilledVolume(t.getOriginalVolume());
+                        int rv = totalVolAtPrice;
+                        t.setFilledVolume(t.getFilledVolume() + rv);
                         t.setRemainingVolume(0);
                         iter.remove();
+                        UserManager.getInstance().updateTradable(t.getUser(), new TradableDTO(t));
+                        totalVolAtPrice -= t.getFilledVolume();
                         if (atPrice.isEmpty()) {
                             bookEntries.remove(top);
                             System.out.println(String.format("\t\tFULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
@@ -155,20 +167,24 @@ public class ProductBookSide {
                         System.out.println(String.format("\t\tFULL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
                                 t.getSide(), t.getOriginalVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
                     }
-
                 } else {
                     int remainder = vol;
-                    for (Tradable t : atPrice) {
+                    Iterator<Tradable> iter = atPrice.iterator();
+
+                    while (iter.hasNext()) {
+                        Tradable t = iter.next();
                         double ratio = (double) t.getRemainingVolume() / totalVolAtPrice;
+                        ratio = ratio + .005;
+                        ratio = Math.floor(ratio * 100) / 100;
                         int toTrade = (int) Math.ceil((double) vol * ratio);
-                        toTrade = Math.min(toTrade, remainder);
                         t.setFilledVolume(t.getFilledVolume() + toTrade);
                         t.setRemainingVolume(t.getRemainingVolume() - toTrade);
+
                         System.out.println(String.format("\t\tPARTIAL FILL: (%s %s) %s %s order: %s at %s, Orig Vol: %s, Rem Vol: %s, Fill Vol: %s, CXL Vol: %s, ID: %s",
                                 t.getSide(), t.getFilledVolume(), t.getUser(), t.getSide(), t.getProduct(), t.getPrice(), t.getOriginalVolume(), t.getRemainingVolume(), t.getFilledVolume(), t.getCancelledVolume(), t.getId()));
                         remainder -= toTrade;
+                        UserManager.getInstance().updateTradable(t.getUser(), new TradableDTO(t));
                     }
-
                 }
             }
         } catch (Exception e) {

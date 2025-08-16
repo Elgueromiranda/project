@@ -38,6 +38,13 @@ public final class UserManager {
         user.updateTradable(tradable);
     }
 
+    public User getUser(String userId) throws UserManagerException {
+          if (!users.containsKey(userId)) {
+              throw new UserManagerException("User does not exist");
+          }
+          return users.get(userId);
+    }
+
     @Override
     public String toString() {
         String trades = "";
